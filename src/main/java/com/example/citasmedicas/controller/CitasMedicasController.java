@@ -1,9 +1,12 @@
 package com.example.citasmedicas.controller;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -78,5 +81,31 @@ public class CitasMedicasController {
         );
 
         return ResponseEntity.ok(disponible);
+    }
+
+    @GetMapping("/disponibilidad/{doctor}/{fecha}")
+    public ResponseEntity<List<LocalTime>> consultarDisponibilidad(
+            @PathVariable String doctor,
+            @PathVariable LocalDate fecha) {
+
+        // Definir el horario de trabajo del doctor (ejemplo: de 9:00 a 21:00)
+        LocalTime horaInicio = LocalTime.of(9, 0);
+        LocalTime horaFin = LocalTime.of(21, 0);
+
+        // Generar la lista de horarios disponibles en intervalos de una hora
+        List<LocalTime> horariosDisponibles = new ArrayList<>();
+        for (LocalTime hora = horaInicio; !hora.isAfter(horaFin); hora = hora.plusHours(1)) {
+            horariosDisponibles.add(hora);
+        }
+
+        // Filtrar los horarios que ya están ocupados por citas existentes
+        List<LocalTime> horariosOcupados = citas.stream()
+                .filter(cita -> cita.getDoctor().equals(doctor) && cita.getFechaHora().toLocalDate().equals(fecha))
+                .map(cita -> cita.getFechaHora().toLocalTime())
+                .collect(Collectors.toList());
+
+        horariosDisponibles.removeAll(horariosOcupados);
+
+        return ResponseEntity.ok(horariosDisponibles);
     }
 }
