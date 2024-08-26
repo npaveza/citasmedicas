@@ -70,19 +70,6 @@ public class CitasMedicasController {
         return citas;
     }
 
-    @GetMapping("/disponibilidad/{doctor}/{fechaHora}")
-    public ResponseEntity<Boolean> verificarDisponibilidad(
-            @PathVariable String doctor,
-            @PathVariable LocalDateTime fechaHora) {
-
-        boolean disponible = citas.stream().noneMatch(
-                cita -> cita.getDoctor().equals(doctor) &&
-                        cita.getFechaHora().equals(fechaHora)
-        );
-
-        return ResponseEntity.ok(disponible);
-    }
-
     @GetMapping("/disponibilidad/{doctor}/{fecha}")
     public ResponseEntity<List<LocalTime>> consultarDisponibilidad(
             @PathVariable String doctor,
